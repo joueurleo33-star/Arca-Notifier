@@ -2,32 +2,37 @@ const express = require('express');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
+// Notre "base de données" en mémoire (tout est stocké ici)
 let logs = [];
 
+// --- ROUTE UNIQUE : Elle gère l'envoi ET l'affichage ---
 app.all('/', (req, res) => {
     res.setHeader('Content-Type', 'text/plain');
 
+    // Si c'est une requête POST (Roblox envoie des données)
     if (req.method === 'POST') {
         const body = req.body || {};
+        
+        // On récupère les données envoyées par le script Roblox
+        const executor = body.executor || "Inconnu";
         const name = body.animalName || "Inconnu";
         const gen = body.generation || 0;
         const mut = body.mutation || "Aucune";
-        const owner = body.owner || "Inconnu";
-        const job = body.jobId || "Inconnu";
-        
-        // 🆕 Le script Roblox nous envoie maintenant les stats directement !
-        const players = body.players || "?";
-        const maxPlayers = body.maxPlayers || "?";
+        const rarity = body.rarity || "Common";
 
         const time = new Date().toLocaleTimeString();
-        const line = `[${time}] ${owner} [Job: ${job}] 👥 ${players}/${maxPlayers} -> ${name} (Gen: ${gen}, Mut: ${mut})`;
+        const line = `[${time}] ${executor} -> ${name} (Gen: ${gen}, Mut: ${mut}, Rarity: ${rarity})`;
 
+        // On ajoute la ligne en haut de la liste
         logs.unshift(line);
-        if (logs.length > 50) logs.pop();
+
+        // On garde seulement les 100 dernières lignes pour ne pas saturer la mémoire
+        if (logs.length > 100) logs.pop();
 
         return res.send("OK - Données reçues pour " + name);
     }
 
+    // Si c'est une requête GET (Quelqu'un ouvre la page web)
     if (logs.length === 0) {
         res.send("En attente d'animaux...");
     } else {
@@ -37,5 +42,5 @@ app.all('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log("✅ API (Réception directe des stats) active !");
+    console.log("✅ API Unifiée (index.js) active !");
 });
