@@ -2,14 +2,12 @@ const express = require('express');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-// Notre "base de données" en mémoire (tout est stocké ici)
+// Notre base de données en mémoire
 let logs = [];
 
-// --- ROUTE UNIQUE : Elle gère l'envoi ET l'affichage ---
 app.all('/', (req, res) => {
     res.setHeader('Content-Type', 'text/plain');
 
-    // Si c'est une requête POST (Roblox envoie des données)
     if (req.method === 'POST') {
         const body = req.body || {};
         
@@ -32,7 +30,6 @@ app.all('/', (req, res) => {
         return res.send("OK - Données reçues pour " + name);
     }
 
-    // Si c'est une requête GET (Quelqu'un ouvre la page web)
     if (logs.length === 0) {
         res.send("En attente d'animaux...");
     } else {
